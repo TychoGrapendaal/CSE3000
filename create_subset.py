@@ -44,6 +44,42 @@ adata = ad.read_h5ad("C:/Users/Tycho/Desktop/SchoolTU/year3/q4_RP/data/0fce5dd5-
 # celltype = 'dendritic cell'
 # celltype = 'erythrocyte'
 
+# celltypes = [
+#     'CD14-positive monocyte',
+#     'naive thymus-derived CD4-positive, alpha-beta T cell',
+#     'CD16-positive, CD56-dim natural killer cell, human',
+#     'central memory CD4-positive, alpha-beta T cell',
+#     'naive thymus-derived CD8-positive, alpha-beta T cell',
+#     'CD8-positive, alpha-beta cytotoxic T cell',
+#     'CD14-low, CD16-positive monocyte',
+#     'CD8-positive, alpha-beta memory T cell',
+#     'naive B cell',
+#     'memory B cell',
+#     'gamma-delta T cell',
+#     'effector memory CD4-positive, alpha-beta T cell',
+#     'mucosal invariant T cell',
+#     'CD4-positive, alpha-beta T cell',
+#     'T cell',
+#     'monocyte',
+#     'CD1c-positive myeloid dendritic cell',
+#     'CD4-positive, alpha-beta cytotoxic T cell',
+#     'regulatory T cell',
+#     'platelet',
+#     'natural killer cell',
+#     'B cell',
+#     'CD16-negative, CD56-bright natural killer cell, human',
+#     'mature B cell',
+#     'plasmacytoid dendritic cell',
+#     'CD8-positive, alpha-beta T cell',
+#     'plasma cell',
+#     'CD141-positive myeloid dendritic cell',
+#     'double negative T regulatory cell',
+#     'conventional dendritic cell',
+#     'innate lymphoid cell',
+#     'dendritic cell',
+#     'erythrocyte'
+# ]
+
 # Create a subset of a cell type
 subset = adata[adata.obs['cell_type'] == celltype].to_memory()
 print(f"{celltype} shape: {subset.shape}")
@@ -96,7 +132,7 @@ print(f"New shape: {donor_adata.shape}")
 # Show a distribution of the age of the donors
 string_age = donor_adata.obs['development_stage'].astype(str)
 string_age = string_age.str.extract('(\d+)').astype(int).squeeze()  # Extract numeric part
-sns.histplot(string_age, bins=54)
+sns.histplot(string_age, bins=57)
 plt.xlabel('Age')
 plt.ylabel('Count')
 title = 'Age Distribution of ' + celltype
@@ -105,6 +141,8 @@ plt.title(title)
 # Save the figure to folder figures
 path = 'figures/' + title.replace(' ', '_').lower() + '.png'
 plt.savefig(path)
+
+plt.close()
 
 
 # Based on the age distribution create two subsets. One for the young and one for the old donors Young donors are those with age <= 36
