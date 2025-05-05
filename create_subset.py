@@ -8,7 +8,41 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 adata = ad.read_h5ad("C:/Users/Tycho/Desktop/SchoolTU/year3/q4_RP/data/0fce5dd5-bcec-4288-90b3-19a16b45ad16.h5ad", backed='r')
-celltype = 'erythrocyte'
+
+# Cell types
+# celltype = 'CD14-positive monocyte'
+# celltype = 'naive thymus-derived CD4-positive, alpha-beta T cell'
+# celltype = 'CD16-positive, CD56-dim natural killer cell, human'
+# celltype = 'central memory CD4-positive, alpha-beta T cell'
+# celltype = 'naive thymus-derived CD8-positive, alpha-beta T cell'
+# celltype = 'CD8-positive, alpha-beta cytotoxic T cell'
+# celltype = 'CD14-low, CD16-positive monocyte'
+# celltype = 'CD8-positive, alpha-beta memory T cell'
+# celltype = 'naive B cell'
+# celltype = 'memory B cell'
+# celltype = 'gamma-delta T cell'
+# celltype = 'effector memory CD4-positive, alpha-beta T cell'
+# celltype = 'mucosal invariant T cell'
+# celltype = 'CD4-positive, alpha-beta T cell'
+# celltype = 'T cell'
+# celltype = 'monocyte'
+# celltype = 'CD1c-positive myeloid dendritic cell'
+# celltype = 'CD4-positive, alpha-beta cytotoxic T cell'
+# celltype = 'regulatory T cell'
+# celltype = 'platelet'
+# celltype = 'natural killer cell'
+# celltype = 'B cell'
+# celltype = 'CD16-negative, CD56-bright natural killer cell, human'
+# celltype = 'mature B cell'
+# celltype = 'plasmacytoid dendritic cell'
+# celltype = 'CD8-positive, alpha-beta T cell'
+# celltype = 'plasma cell'
+# celltype = 'CD141-positive myeloid dendritic cell'
+# celltype = 'double negative T regulatory cell'
+# celltype = 'conventional dendritic cell'
+# celltype = 'innate lymphoid cell'
+# celltype = 'dendritic cell'
+# celltype = 'erythrocyte'
 
 # Create a subset of a cell type
 subset = adata[adata.obs['cell_type'] == celltype].to_memory()
@@ -20,7 +54,7 @@ non_zero_genes = np.array(subset.X.sum(axis=0)).flatten() > 0
 subset = subset[:, non_zero_genes]
 print(f"Shape after removing zero expression genes: {subset.shape}")
 
-# Ensure 'donor_id' is in adata.obs
+# Ensure 'donor_id' is in subset.columns
 assert 'donor_id' in subset.obs.columns, "Column 'donor_id' not found!"
 
 # Get unique donors and count cells per donor
@@ -57,9 +91,9 @@ donor_adata = sc.AnnData(
 )
 
 # Verify
-print(f"New shape: {donor_adata.shape}")  # Should be (72, 14301)
+print(f"New shape: {donor_adata.shape}")
 
-# Show a distrubution of the age of the donors
+# Show a distribution of the age of the donors
 string_age = donor_adata.obs['development_stage'].astype(str)
 string_age = string_age.str.extract('(\d+)').astype(int).squeeze()  # Extract numeric part
 sns.histplot(string_age, bins=54)
@@ -73,14 +107,25 @@ path = 'figures/' + title.replace(' ', '_').lower() + '.png'
 plt.savefig(path)
 
 
-# Based on the age distribution create two subsets. One for the young and one for the old donors Young donors are those with age < 30
-# Old donors are those with age >= 50
-young_donors = donor_adata[donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() < 30]
-old_donors = donor_adata[donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() >= 50]
+# Based on the age distribution create two subsets. One for the young and one for the old donors Young donors are those with age <= 36
+# Old donors are those with age >= 47
+young_donors = donor_adata[donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() <= 36]
+old_donors = donor_adata[donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() >= 47]
 print(f"Young donors shape: {young_donors.shape}")
 print(f"Old donors shape: {old_donors.shape}")
 
 
-# Save the subsets to folder subsets
-young_donors.write_h5ad('subsets/young_donors.h5ad')
-old_donors.write_h5ad('subsets/old_donors.h5ad')
+# Remove all the genes with zero expression in every individual donor
+non_zero_genes_young = np.array(young_donors.X.sum(axis=0)).flatten() > 0
+non_zero_genes_old = np.array(old_donors.X.sum(axis=0)).flatten() > 0
+non_zero_genes = non_zero_genes_young & non_zero_genes_old
+young_donors = young_donors[:, non_zero_genes]
+old_donors = old_donors[:, non_zero_genes]
+print(f"Young donors shape after removing zero expression genes: {young_donors.shape}")
+print(f"Old donors shape after removing zero expression genes: {old_donors.shape}")
+
+# Save the subsets
+young_path = "subsets/{}_young_donors.h5ad".format(celltype)
+old_path = "subsets/{}_old_donors.h5ad".format(celltype)
+young_donors.write_h5ad(young_path)
+old_donors.write_h5ad(old_path)
