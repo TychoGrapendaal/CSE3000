@@ -7,10 +7,11 @@ from scipy.sparse import issparse
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-adata = ad.read_h5ad("C:/Users/Tycho/Desktop/SchoolTU/year3/q4_RP/data/0fce5dd5-bcec-4288-90b3-19a16b45ad16.h5ad", backed='r')
+# adata = ad.read_h5ad("C:/Users/Tycho/Desktop/SchoolTU/year3/q4_RP/data/0fce5dd5-bcec-4288-90b3-19a16b45ad16.h5ad", backed='r')
+adata = ad.read_h5ad("test_data.h5ad", backed='r')
 
 # Cell types
-# celltype = 'CD14-positive monocyte'
+celltype = 'CD14-positive monocyte'
 # celltype = 'naive thymus-derived CD4-positive, alpha-beta T cell'
 # celltype = 'CD16-positive, CD56-dim natural killer cell, human'
 # celltype = 'central memory CD4-positive, alpha-beta T cell'
@@ -118,6 +119,9 @@ donor_metadata = (
     .loc[donors]  # Preserve donor order
 )
 
+# Add the number of cells that donor had
+donor_metadata['n_cells'] = subset.obs['donor_id'].value_counts().loc[donors].values
+
 # Build new AnnData
 donor_adata = sc.AnnData(
     X=mean_expression,  # or mean_expression.values for dense
@@ -139,7 +143,7 @@ title = 'Age Distribution of ' + celltype
 plt.title(title)
 # plt.show()
 # Save the figure to folder figures
-path = 'figures/' + title.replace(' ', '_').lower() + '.png'
+path = '' + title.replace(' ', '_').lower() + '.png'
 plt.savefig(path)
 
 plt.close()
@@ -163,7 +167,7 @@ print(f"Young donors shape after removing zero expression genes: {young_donors.s
 print(f"Old donors shape after removing zero expression genes: {old_donors.shape}")
 
 # Save the subsets
-young_path = "subsets/{}_young_donors.h5ad".format(celltype)
-old_path = "subsets/{}_old_donors.h5ad".format(celltype)
+young_path = "{}_young_donors.h5ad".format(celltype)
+old_path = "{}_old_donors.h5ad".format(celltype)
 young_donors.write_h5ad(young_path)
 old_donors.write_h5ad(old_path)
