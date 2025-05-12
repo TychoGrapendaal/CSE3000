@@ -7,11 +7,11 @@ from scipy.sparse import issparse
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# adata = ad.read_h5ad("C:/Users/Tycho/Desktop/SchoolTU/year3/q4_RP/data/0fce5dd5-bcec-4288-90b3-19a16b45ad16.h5ad", backed='r')
-adata = ad.read_h5ad("test_data.h5ad", backed='r')
+adata = ad.read_h5ad("C:/Users/Tycho/Desktop/SchoolTU/year3/q4_RP/data/0fce5dd5-bcec-4288-90b3-19a16b45ad16.h5ad", backed='r')
+# adata = ad.read_h5ad("test_data.h5ad", backed='r')
 
 # Cell types
-celltype = 'CD14-positive monocyte'
+# celltype = 'CD14-positive monocyte'
 # celltype = 'naive thymus-derived CD4-positive, alpha-beta T cell'
 # celltype = 'CD16-positive, CD56-dim natural killer cell, human'
 # celltype = 'central memory CD4-positive, alpha-beta T cell'
@@ -43,7 +43,7 @@ celltype = 'CD14-positive monocyte'
 # celltype = 'conventional dendritic cell'
 # celltype = 'innate lymphoid cell'
 # celltype = 'dendritic cell'
-# celltype = 'erythrocyte'
+celltype = 'erythrocyte'
 
 # celltypes = [
 #     'CD14-positive monocyte',
@@ -86,8 +86,8 @@ subset = adata[adata.obs['cell_type'] == celltype].to_memory()
 print(f"{celltype} shape: {subset.shape}")
 print(f"{celltype} cell type: {subset.obs['cell_type'].unique()}")
 
-# Remove all the genes with zero expression in every cell
-non_zero_genes = np.array(subset.X.sum(axis=0)).flatten() > 0
+# Remove all the genes with less than 1000 expressions in every cell
+non_zero_genes = np.array(subset.raw.X.sum(axis=0)).flatten() > 1000
 subset = subset[:, non_zero_genes]
 print(f"Shape after removing zero expression genes: {subset.shape}")
 
@@ -143,7 +143,8 @@ title = 'Age Distribution of ' + celltype
 plt.title(title)
 # plt.show()
 # Save the figure to folder figures
-path = '' + title.replace(' ', '_').lower() + '.png'
+folder = "subsets/"
+path = folder + title.replace(' ', '_').lower() + '.png'
 plt.savefig(path)
 
 plt.close()
@@ -167,7 +168,7 @@ print(f"Young donors shape after removing zero expression genes: {young_donors.s
 print(f"Old donors shape after removing zero expression genes: {old_donors.shape}")
 
 # Save the subsets
-young_path = "{}_young_donors.h5ad".format(celltype)
-old_path = "{}_old_donors.h5ad".format(celltype)
+young_path = folder + "{}_young_donors.h5ad".format(celltype)
+old_path = folder + "{}_old_donors.h5ad".format(celltype)
 young_donors.write_h5ad(young_path)
 old_donors.write_h5ad(old_path)
