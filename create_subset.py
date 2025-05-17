@@ -29,7 +29,7 @@ adata = ad.read_h5ad("C:/Users/Tycho/Desktop/SchoolTU/year3/q4_RP/data/0fce5dd5-
 # celltype = 'monocyte'
 # celltype = 'CD1c-positive myeloid dendritic cell'
 # celltype = 'CD4-positive, alpha-beta cytotoxic T cell'
-# celltype = 'regulatory T cell'
+celltype = 'regulatory T cell'
 # celltype = 'platelet'
 # celltype = 'natural killer cell'
 # celltype = 'B cell'
@@ -43,7 +43,7 @@ adata = ad.read_h5ad("C:/Users/Tycho/Desktop/SchoolTU/year3/q4_RP/data/0fce5dd5-
 # celltype = 'conventional dendritic cell'
 # celltype = 'innate lymphoid cell'
 # celltype = 'dendritic cell'
-celltype = 'erythrocyte'
+# celltype = 'erythrocyte'
 
 # celltypes = [
 #     'CD14-positive monocyte',
@@ -86,8 +86,8 @@ subset = adata[adata.obs['cell_type'] == celltype].to_memory()
 print(f"{celltype} shape: {subset.shape}")
 print(f"{celltype} cell type: {subset.obs['cell_type'].unique()}")
 
-# Remove all the genes with less than 1000 expressions in every cell
-non_zero_genes = np.array(subset.raw.X.sum(axis=0)).flatten() > 1000
+# Remove all the genes with less than the number of cells of expression
+non_zero_genes = np.array(subset.raw.X.sum(axis=0)).flatten() > subset.shape[0]
 subset = subset[:, non_zero_genes]
 print(f"Shape after removing zero expression genes: {subset.shape}")
 
@@ -133,6 +133,10 @@ donor_adata = sc.AnnData(
 # Verify
 print(f"New shape: {donor_adata.shape}")
 
+# Remove all donors with less than 100 cells
+donor_adata = donor_adata[donor_adata.obs['n_cells'] > 5]
+print(f"Shape after removing donors with less than 5 cells: {donor_adata.shape}")
+
 # Show a distribution of the age of the donors
 string_age = donor_adata.obs['development_stage'].astype(str)
 string_age = string_age.str.extract('(\d+)').astype(int).squeeze()  # Extract numeric part
@@ -143,7 +147,7 @@ title = 'Age Distribution of ' + celltype
 plt.title(title)
 # plt.show()
 # Save the figure to folder figures
-folder = "subsets/"
+folder = "figures/"
 path = folder + title.replace(' ', '_').lower() + '.png'
 plt.savefig(path)
 
@@ -168,6 +172,7 @@ print(f"Young donors shape after removing zero expression genes: {young_donors.s
 print(f"Old donors shape after removing zero expression genes: {old_donors.shape}")
 
 # Save the subsets
+folder = "subsets/"
 young_path = folder + "{}_young_donors.h5ad".format(celltype)
 old_path = folder + "{}_old_donors.h5ad".format(celltype)
 young_donors.write_h5ad(young_path)
