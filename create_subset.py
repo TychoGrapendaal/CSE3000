@@ -78,7 +78,7 @@ celltype = 'regulatory T cell'
 #     'conventional dendritic cell',
 #     'innate lymphoid cell',
 #     'dendritic cell',
-#     'erythrocyte'
+    # 'erythrocyte'
 # ]
 
 # Create a subset of a cell type
@@ -86,10 +86,16 @@ subset = adata[adata.obs['cell_type'] == celltype].to_memory()
 print(f"{celltype} shape: {subset.shape}")
 print(f"{celltype} cell type: {subset.obs['cell_type'].unique()}")
 
+# Calculate the total number of cells per age
+age_counts_cells = subset.obs['development_stage'].value_counts()
+# Extract numeric part from 'development_stage'
+age_counts_cells.index = age_counts_cells.index.str.extract('(\d+)').astype(int).squeeze()  # Extract numeric part
+age_counts = age_counts_cells.sort_index()  # Sort by age
+
 # Remove all the genes with less than the number of cells of expression
 non_zero_genes = np.array(subset.raw.X.sum(axis=0)).flatten() > subset.shape[0]
 subset = subset[:, non_zero_genes]
-print(f"Shape after removing zero expression genes: {subset.shape}")
+print(f"Shape after removing low expression genes: {subset.shape}")
 
 # Ensure 'donor_id' is in subset.columns
 assert 'donor_id' in subset.obs.columns, "Column 'donor_id' not found!"
@@ -133,9 +139,38 @@ donor_adata = sc.AnnData(
 # Verify
 print(f"New shape: {donor_adata.shape}")
 
-# Remove all donors with less than 100 cells
-donor_adata = donor_adata[donor_adata.obs['n_cells'] > 5]
-print(f"Shape after removing donors with less than 5 cells: {donor_adata.shape}")
+# Calculate the total number of donors per age
+age_counts_donors = donor_adata.obs['development_stage'].value_counts()
+# Extract numeric part from 'development_stage'
+age_counts_donors.index = age_counts_donors.index.str.extract('(\d+)').astype(int).squeeze()  # Extract numeric part
+age_counts_donors = age_counts_donors.sort_index()  # Sort by age
+
+
+# Plot the average number of cells per age
+average_number_cells = age_counts_cells / age_counts_donors
+
+# Plot the average number of cells per age
+plt.figure(figsize=(10, 5))
+plt.bar(average_number_cells.index, average_number_cells.values)
+plt.xlabel('Age')
+plt.ylabel('Average number of cells')
+title = 'Average number of cells per age of ' + celltype
+plt.title(title)
+# Save the figure to folder figures
+folder = "figures/average_cells_per_age/"
+path = folder + title.replace(' ', '_').lower() + '.png'
+plt.savefig(path)
+plt.close()
+
+
+# Remove all donors with less than 10% of the median number of cells
+median_cells = donor_adata.obs['n_cells'].median()
+print(f"Median number of cells: {median_cells}")
+threshold = median_cells * 0.1
+threshold = int(threshold)
+print(f"Threshold: {threshold}")
+donor_adata = donor_adata[donor_adata.obs['n_cells'] > threshold]
+print(f"Shape after removing donors with less than threshold number of cells: {donor_adata.shape}")
 
 # Show a distribution of the age of the donors
 string_age = donor_adata.obs['development_stage'].astype(str)
@@ -147,33 +182,45 @@ title = 'Age Distribution of ' + celltype
 plt.title(title)
 # plt.show()
 # Save the figure to folder figures
-folder = "figures/"
+folder = "figures/distributions/"
 path = folder + title.replace(' ', '_').lower() + '.png'
 plt.savefig(path)
 
 plt.close()
 
 
+
 # Based on the age distribution create two subsets. One for the young and one for the old donors Young donors are those with age <= 36
 # Old donors are those with age >= 47
-young_donors = donor_adata[donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() <= 36]
-old_donors = donor_adata[donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() >= 47]
+# Based on the age distribution create three subsets. One for the young, one for the old and one for the middle aged donors
+# Young donors are those with age <= 30
+# Middle aged donors are those with age >= 40 and <= 50
+# Old donors are those with age >= 60
+young_donors = donor_adata[donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() <= 30]
+middle_donors = donor_adata[(donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() >= 40) & (donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() <= 50)]
+old_donors = donor_adata[donor_adata.obs['development_stage'].astype(str).str.extract('(\d+)').astype(int).squeeze() >= 60]
 print(f"Young donors shape: {young_donors.shape}")
+print(f"Middle donors shape: {middle_donors.shape}")
 print(f"Old donors shape: {old_donors.shape}")
 
 
 # Remove all the genes with zero expression in every individual donor
 non_zero_genes_young = np.array(young_donors.X.sum(axis=0)).flatten() > 0
+non_zero_genes_middle = np.array(middle_donors.X.sum(axis=0)).flatten() > 0
 non_zero_genes_old = np.array(old_donors.X.sum(axis=0)).flatten() > 0
-non_zero_genes = non_zero_genes_young & non_zero_genes_old
+non_zero_genes = non_zero_genes_young & non_zero_genes_old & non_zero_genes_middle
 young_donors = young_donors[:, non_zero_genes]
+middle_donors = middle_donors[:, non_zero_genes]
 old_donors = old_donors[:, non_zero_genes]
 print(f"Young donors shape after removing zero expression genes: {young_donors.shape}")
+print(f"Middle donors shape after removing zero expression genes: {middle_donors.shape}")
 print(f"Old donors shape after removing zero expression genes: {old_donors.shape}")
 
 # Save the subsets
 folder = "subsets/"
 young_path = folder + "{}_young_donors.h5ad".format(celltype)
+middle_path = folder + "{}_middle_donors.h5ad".format(celltype)
 old_path = folder + "{}_old_donors.h5ad".format(celltype)
 young_donors.write_h5ad(young_path)
+middle_donors.write_h5ad(middle_path)
 old_donors.write_h5ad(old_path)
