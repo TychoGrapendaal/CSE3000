@@ -1,0 +1,3 @@
+https://cellxgene.cziscience.com/collections/ced320a1-29f3-47c1-a735-513c7084d508
+
+download "AIDA Phase 1 Data Freeze v1: Chinese, Indian, Japanese, Korean, and Malay donors in Japan, Singapore, and South Korea" and but it in the h5ad folder.
