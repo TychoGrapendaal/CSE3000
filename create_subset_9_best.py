@@ -99,7 +99,7 @@ for celltype in cell_types:
     title = 'Average number of cells per age of ' + celltype
     plt.title(title)
     # Save the figure to folder figures
-    folder = "new_figures/average_cells_per_age/"
+    folder = "figures_9/average_cells_per_age/"
     path = folder + title.replace(' ', '_').lower() + '.png'
     plt.savefig(path)
     plt.close()
