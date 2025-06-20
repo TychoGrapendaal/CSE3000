@@ -91,14 +91,6 @@ def train_cell_type_specific_clocks(adata_path, output_dir, cell_type, genes_to_
     print("- clock_performance.csv (metrics)")
 
 if __name__ == "__main__":
-    # Example usage with the specific genes from the application code
-    # important_genes = [
-    #     'ENSG00000197111', 'ENSG00000124614', 'ENSG00000177954',
-    #     'ENSG00000241343', 'ENSG00000145592', 'ENSG00000100345',
-    #     'ENSG00000171858', 'ENSG00000122026', 'ENSG00000146278',
-    #     'ENSG00000157514'
-    # ]
-
     # Read the important genes from a file every line contains a gene
     cell_type = "effector memory CD4-positive, alpha-beta T cell"
     important_genes_file = f"results/{cell_type}_filtered_hubs.txt"
