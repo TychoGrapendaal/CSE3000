@@ -42,6 +42,8 @@ All results are generated using **Jupyter notebooks** or **Python** files with:
      - double negative T regulatory cell
      - innate lymphoid cell
 
+   - Then run the notebook [experiments/volcano_plot.ipynb](experiments/volcano_plot.ipynb) to generate the volcano plots for each cell type.
+
 4. **Experiment 3: Gene Networks**  
    - Run the notebook [experiments/network_node_distribution.ipynb](experiments/network_node_distribution.ipynb).
 
