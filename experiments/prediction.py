@@ -25,7 +25,7 @@ def train_cell_type_specific_clocks(adata_path, output_dir, cell_type, genes_to_
         print(f"Filtering genes - keeping {len(valid_genes)}/{len(genes_to_keep)} specified genes")
         adata = adata[:, valid_genes]
     
-    # Preprocessing (matches application pipeline)
+    # Preprocessing
     sc.pp.normalize_total(adata, target_sum=1e4)
     sc.pp.log1p(adata)
     
@@ -67,7 +67,7 @@ def train_cell_type_specific_clocks(adata_path, output_dir, cell_type, genes_to_
     model_filename = f"{cell_type.replace('/', '_')}_models5.csv"
     model_df.to_csv(f"{output_dir}/{model_filename}", index=False)
     
-    # 2. Save imputation data (properly shaped as 1 row x genes columns)
+    # 2. Save imputation data
     impute_data = pd.DataFrame(
         data=[X.mean(axis=0)],
         columns=adata.var_names
