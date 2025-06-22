@@ -50,7 +50,7 @@ All results are generated using **Jupyter notebooks** or **Python** files with:
 
 6. **Experiment 5: Prediction**  
    - Run the notebook [experiments/hubs_single_cell.ipynb](experiments/hubs_single_cell.ipynb) to retrieve the hub genes for the specified cell type.
-   - Run the notebook [experiments/prediction.ipynb](experiments/prediction.ipynb) to generate the linear regression models for each cell type
+   - Run the notebook [experiments/prediction.py](experiments/prediction.py) to generate the linear regression models for each cell type
    - Run the notebook [experiments/apply_clocks_general.py](experiments/apply_clocks_general.py) to apply the clocks to the data. (This file is created by Enikő Zakar-Polyák, Attila Csordas, Róbert Pálovics, and Csaba Kerepesi. Profiling the transcriptomic age of single-cells in humans. Commun. Biol., 7(1):1397, October 2024. https://github.com/polyake/scaging)
 
 ---
